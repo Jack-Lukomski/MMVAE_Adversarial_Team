@@ -13,6 +13,7 @@ from mmvae.trainers.utils import get_roc_stats
 import io
 import PIL.Image
 from torchvision.transforms import ToTensor
+from discriminators.DMetrics import DMetrics
 
 lr = 0.0001
 discrim_rato = 5000
@@ -34,8 +35,16 @@ class HumanVAETrainer(BaseTrainer):
         self.tprs = []
         self.fprs = []
         self.aucs = []
+        self.meta_d = torch.nn.Sequential(
+            torch.nn.Linear(60664, 256),
+            torch.nn.ReLU(),
+            torch.nn.Linear(256, 1),
+            torch.nn.Sigmoid()
+        )
         super(HumanVAETrainer, self).__init__(*args, **kwargs)
         self.model.to(self.device)
+        self.meta_d.to(self.device)
+        self.d_metrics = DMetrics(self.model, self.dataloader)
 
     def configure_model(self) -> Module:
         return HumanVAE.configure_model() 
@@ -68,6 +77,28 @@ class HumanVAETrainer(BaseTrainer):
     def train(self, epochs, load_snapshot=False):
         self.batch_iteration = 0
         super().train(epochs, load_snapshot)
+        fpr, tpr, auc = self.d_metrics.md_eval(self.meta_d, 1)
+
+        plt.figure()
+        plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % auc)
+        plt.plot([0, 1], [0, 1], 'k--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver Operating Characteristic')
+        plt.legend(loc="lower right")
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        
+        image = PIL.Image.open(buf)
+        image_tensor = ToTensor()(image)
+        
+        self.writer.add_image(f'ROC/MetaDiscriminator', image_tensor)
+        
+        plt.close()
     
     def train_epoch(self, epoch):
         for train_data in self.dataloader:

@@ -13,7 +13,7 @@ class DMetrics:
 
       with torch.no_grad():
         for train_data in self.dataloader:
-          fake_data = self.generator(train_data)
+          fake_data, _, _ = self.generator(train_data)
           real_scores.extend(discriminator(train_data).view(-1).tolist())
           fake_scores.extend(discriminator(fake_data).view(-1).tolist())
 
@@ -36,7 +36,7 @@ class DMetrics:
           real_loss = md_loss_fn(real_pred, torch.ones_like(real_pred))
           real_loss.backward()
 
-          fake_data = self.generator(train_data)
+          fake_data, _, _ = self.generator(train_data)
 
           fake_pred = md(fake_data)
           fake_loss = md_loss_fn(fake_pred, torch.zeros_like(fake_pred))
