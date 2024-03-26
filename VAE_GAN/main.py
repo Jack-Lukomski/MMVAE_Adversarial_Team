@@ -1,16 +1,31 @@
 import torch
-from mmvae.trainers import HumanVAE_gan
-from discriminators import annealing
-def main(device):
-    batch_size = 32
-    trainer = HumanVAE_gan.HumanVAETrainer(
-         batch_size,
-         device,
-        #  log_dir="/active/debruinz_project/cardell_taylor/logs/VAE_GAN_2"
-     )
-    print("done")
-    trainer.train(epochs=1)
-if _name_ == "_main_":
-    CUDA = True
-    device = "cuda" if torch.cuda.is_available() and CUDA else "cpu"
-    main(device)
+from mmvae.models.HumanMouseVAE import SharedVA
+from mmvae.trainers.MultiModel_gan import HumanMouseVAETrainer
+
+def main():
+    # Define training parameters
+    batch_size = 64
+    learning_rate = 0.001
+    discriminator_learning_rate = 0.0001
+    num_epochs = 10
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # Initialize the model
+    model = SharedVA().to(device)
+
+    # Initialize the trainer
+    trainer = HumanMouseVAETrainer(model=model,
+                                   batch_size=batch_size,
+                                   lr=learning_rate,
+                                   discriminator_lr=discriminator_learning_rate,
+                                   device=device)
+
+    # Start training
+    for epoch in range(1, num_epochs + 1):
+        print(f'Starting Epoch {epoch}')
+        trainer.train_epoch(epoch)
+
+    print('Training Complete')
+
+if __name__ == '__main__':
+    main()

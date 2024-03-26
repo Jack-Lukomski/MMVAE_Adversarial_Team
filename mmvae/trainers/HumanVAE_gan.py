@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.nn.modules import Module
 import mmvae.trainers.utils as utils
-import mmvae.models.HumanMouseVAE_gan as HumanVAE
+import mmvae.models.HumanVAE_gan as HumanVAE
 from mmvae.trainers.trainer import BaseTrainer
 from mmvae.data import MappedCellCensusDataLoader
 import numpy as np
