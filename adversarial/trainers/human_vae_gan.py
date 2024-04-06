@@ -1,4 +1,6 @@
 import torch
+import pandas as pd
+import os
 import torch.nn.functional as F
 from torch.nn.modules import Module
 from torch.optim.lr_scheduler import LRScheduler
@@ -32,6 +34,8 @@ class HumanVAEGANTrainer(HPBaseTrainer):
         self.loss_list = []
         self.recon_list = []
         self.md_list = []
+        #for comparison
+        self.vae_vs_discriminator_performance = []
         
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     #                             Configuration                             #
@@ -147,6 +151,7 @@ class HumanVAEGANTrainer(HPBaseTrainer):
         self.batch_iteration = 0
         super().train(epochs, load_snapshot)
 
+    #train
     def train_epoch(self, epoch):
         self.model.train(True) # Ensure model is in train mode after testing
         num_batch_samples = len(self.train_loader)
@@ -185,7 +190,7 @@ class HumanVAEGANTrainer(HPBaseTrainer):
         loss.backward()
         self.optimizers['shr_vae'].step()
         
-    
+    #our stuff
     def train_trace_bc_feedback(self, train_data: torch.Tensor, fake_train_data: torch.Tensor):
         total_loss, real_loss, fake_loss = self.trace_bc_feedback(train_data, fake_train_data)
         self.optimizers['realism_bc'].zero_grad()
@@ -193,7 +198,6 @@ class HumanVAEGANTrainer(HPBaseTrainer):
         self.optimizers['realism_bc'].step()
     
     def get_run_csv(self, directory: str):
-        import pandas as pd
         df = pd.DataFrame({
             'KL': self.kl_list,
             'Reconstruction': self.recon_list,
@@ -201,3 +205,4 @@ class HumanVAEGANTrainer(HPBaseTrainer):
             'MD': self.md_list
         })
         return df.to_csv(directory)
+

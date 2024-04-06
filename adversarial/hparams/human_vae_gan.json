@@ -1,8 +1,8 @@
 {
-    "tensorboard.run_name": "",
+    "tensorboard.run_name": "testrun",
     "snapshot.path": "",
     "snapshot.save_every": 0,
-    "tensorboard.directory": "/active/debruinz_project/cardell_taylor/logs/",
+    "tensorboard.directory": "/active/debruinz_project/linhao_y/logs/",
     "data_file_path": "/active/debruinz_project/CellCensus_3M/3m_human_chunk_10.npz",
     "metadata_file_path": "/active/debruinz_project/CellCensus_3M/3m_human_metadata_10.csv",
     "train_dataset_ratio": 0.8,
@@ -73,7 +73,7 @@
           "layer4": {
             "input": 1024,
             "output": 60664,
-            "activation": "sigmoid"  
+            "activation": "relu"  
           }
         },
         "mu": {
@@ -93,16 +93,11 @@
       "model": {
         "layer1": {
           "input": 60664,
-          "output": 512,
+          "output": 256,
           "activation": "relu" 
         },
-        "layer2": {
-          "input": 512,
-          "output": 128,
-          "activation": "relu"
-        },
         "layer3": {
-          "input": 128,
+          "input": 256,
           "output": 1,
           "activation": "sigmoid"
         }
